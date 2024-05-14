@@ -8,17 +8,18 @@ const pool = new Pool({
 });
 
 const cohrtName = process.argv[2];
-const noLimits = process.argv[3];
-pool
-  .query(
-    `
+const noLimits = process.argv[3]||5;
+
+const values = [`%${cohrtName}%`, noLimits]
+const queryString =    `
 SELECT students.id as student_id, students.name as name, cohorts.name as cohort
 FROM students
 JOIN cohorts ON cohort_id = cohorts.id
-WHERE cohorts.name LIKE '%${cohrtName}%'
-LIMIT ${noLimits || 5};
+WHERE cohorts.name LIKE $1
+LIMIT $2;
 `
-  )
+pool
+  .query(queryString, values)
   .then((res) => {
     res.rows.forEach((user) => {
       console.log(
